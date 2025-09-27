@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WHATSAPP & SMS REMOTE MONITOR</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            padding: 10px;
+        }
+        
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #34495e;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            color: white;
+            cursor: pointer;
+            border: none;
+            background: none;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .tab.active {
+            background: #3498db;
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 15px;
+            border-radius: 0 0 5px 5px;
+            min-height: 400px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .message-box {
+            background: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        
+        .message {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            background: white;
+            border-left: 4px solid #3498db;
+        }
+        
+        .message.important {
+            border-left: 4px solid #e74c3c;
+            background: #ffeaa7;
+        }
+        
+        .camera-feed {
+            background: black;
+            color: white;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .status-bar {
+            background: #34495e;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .online { color: #2ecc71; }
+        .offline { color: #e74c3c; }
+        .typing { color: #f39c12; }
+        .recording { color: #9b59b6; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>WHATSAPP & SMS REMOTE MONITOR</h1>
+        <p>Monitoring: +18123183085</p>
+    </div>
+    
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('whatsapp')">WhatsApp</button>
+        <button class="tab" onclick="switchTab('sms')">SMS</button>
+        <button class="tab" onclick="switchTab('camera')">Camera</button>
+        <button class="tab" onclick="switchTab('gallery')">Gallery</button>
+        <button class="tab" onclick="switchTab('audio')">Audio</button>
+    </div>
+    
+    <!-- WhatsApp Tab -->
+    <div id="whatsapp" class="tab-content active">
+        <h3>WhatsApp Messages</h3>
+        <div class="message-box" id="whatsapp-messages"></div>
+        <button class="button" onclick="simulateWhatsApp()">Refresh Messages</button>
+        <button class="button" onclick="clearMessages('whatsapp-messages')">Clear</button>
+    </div>
+    
+    <!-- SMS Tab -->
+    <div id="sms" class="tab-content">
+        <h3>SMS Messages</h3>
+        <div class="message-box" id="sms-messages"></div>
+        <button class="button" onclick="simulateSMS()">Refresh SMS</button>
+    </div>
+    
+    <!-- Camera Tab -->
+    <div id="camera" class="tab-content">
+        <h3>Camera Live Feed</h3>
+        <div class="camera-feed" id="back-camera">
+            Back Camera - Live Feed
+        </div>
+        <div class="camera-feed" id="front-camera">
+            Front Camera - Live Feed
+        </div>
+        <button class="button" onclick="startCameraSimulation()">Start Camera</button>
+    </div>
+    
+    <!-- Gallery Tab -->
+    <div id="gallery" class="tab-content">
+        <h3>Photo Gallery</h3>
+        <div class="message-box" id="gallery-items"></div>
+        <button class="button" onclick="simulateGallery()">Import Photos</button>
+    </div>
+    
+    <!-- Audio Tab -->
+    <div id="audio" class="tab-content">
+        <h3>Audio Monitoring</h3>
+        <div class="camera-feed" id="audio-visualizer">
+            Audio Waveform Display
+        </div>
+        <button class="button" onclick="startAudioSimulation()">Start Audio Monitor</button>
+        <button class="button" onclick="stopAudioSimulation()">Stop Audio</button>
+    </div>
+    
+    <div class="status-bar">
+        <span>System Active</span>
+        <span id="whatsapp-status">WhatsApp: <span class="offline">Offline</span></span>
+    </div>
+
+    <script>
+        // Sample data for simulation with your specific messages
+        const whatsappMessages = [
+            "Hey, how's everything going?",
+            "My fiancee is in Kenya",
+            "When are you flying back?",
+            "Can we meet tomorrow?",
+            "Photo shared: travel_itinerary.jpg",
+            "Audio message received",
+            "Call me when you're free",
+            "Did you get the documents?",
+            "My flight arrives at 3 PM",
+            "Let's discuss the plans"
+        ];
+        
+        const smsMessages = [
+            "Your OTP is 784592",
+            "Bank: Transaction completed",
+            "Airline: Flight confirmation",
+            "Delivery: Package arrived",
+            "Appointment: Doctor at 3 PM"
+        ];
+        
+        const contacts = ["Sarah", "John", "Travel Group", "Fiancee", "Family"];
+        const galleryPhotos = [
+            "kenya_trip_001.jpg - 2024-01-15",
+            "flight_ticket.png - 2024-01-14", 
+            "passport_scan.jpg - 2024-01-13",
+            "hotel_booking.pdf - 2024-01-12",
+            "airport_photo.jpg - 2024-01-11"
+        ];
+        
+        let cameraInterval;
+        let audioInterval;
+        let statusInterval;
+        
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Activate tab button
+            event.target.classList.add('active');
+        }
+        
+        function simulateWhatsApp() {
+            const container = document.getElementById('whatsapp-messages');
+            container.innerHTML = '';
+            
+            // Always include the specific important messages
+            const importantMessages = [
+                {contact: "Fiancee", message: "My fiancee is in Kenya", important: true},
+                {contact: "Sarah", message: "When are you flying back?", important: true}
+            ];
+            
+            // Add regular messages
+            for (let i = 0; i < 6; i++) {
+                const message = whatsappMessages[Math.floor(Math.random() * whatsappMessages.length)];
+                const contact = contacts[Math.floor(Math.random() * contacts.length)];
+                const time = new Date().toLocaleTimeString();
+                const important = Math.random() > 0.8; // 20% chance of being important
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = important ? 'message important' : 'message';
+                messageDiv.innerHTML = `<strong>${contact}</strong> (${time}): ${message}`;
+                container.appendChild(messageDiv);
+            }
+            
+            // Add important messages at the top
+            importantMessages.forEach(msg => {
+                const time = new Date().toLocaleTimeString();
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message important';
+                messageDiv.innerHTML = `<strong>${msg.contact}</strong> (${time}): ${msg.message}`;
+                container.insertBefore(messageDiv, container.firstChild);
+            });
+        }
+        
+        function simulateSMS() {
+            const container = document.getElementById('sms-messages');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < 6; i++) {
+                const message = smsMessages[Math.floor(Math.random() * smsMessages.length)];
+                const time = new Date().toLocaleString();
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message';
+                messageDiv.innerHTML = `<strong>SMS</strong> (${time}): ${message}`;
+                container.appendChild(messageDiv);
+            }
+        }
+        
+        function simulateGallery() {
+            const container = document.getElementById('gallery-items');
+            container.innerHTML = '';
+            
+            galleryPhotos.forEach(photo => {
+                const photoDiv = document.createElement('div');
+                photoDiv.className = 'message';
+                photoDiv.innerHTML = `📷 ${photo}`;
+                container.appendChild(photoDiv);
+            });
+        }
+        
+        function startCameraSimulation() {
+            // Clear any existing interval
+            if (cameraInterval) clearInterval(cameraInterval);
+            
+            // Start camera simulation
+            cameraInterval = setInterval(() => {
+                const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6'];
+                const backCamera = document.getElementById('back-camera');
+                const frontCamera = document.getElementById('front-camera');
+                
+                backCamera.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                frontCamera.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                backCamera.innerHTML = 'Back Camera Live - ' + new Date().toLocaleTimeString();
+                frontCamera.innerHTML = 'Front Camera Live - ' + new Date().toLocaleTimeString();
+            }, 2000);
+        }
+        
+        function startAudioSimulation() {
+            if (audioInterval) clearInterval(audioInterval);
+            
+            const visualizer = document.getElementById('audio-visualizer');
+            audioInterval = setInterval(() => {
+                let waves = '';
+                for (let i = 0; i < 20; i++) {
+                    const height = Math.floor(Math.random() * 30) + 5;
+                    waves += `<div style="display:inline-block; width:4px; height:${height}px; background:#3498db; margin:0 2px;"></div>`;
+                }
+                visualizer.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:100%;">${waves}</div>`;
+            }, 200);
+        }
+        
+        function stopAudioSimulation() {
+            if (audioInterval) clearInterval(audioInterval);
+            document.getElementById('audio-visualizer').innerHTML = 'Audio Monitoring Stopped';
+        }
+        
+        function updateWhatsAppStatus() {
+            const statuses = [
+                {text: 'Online', class: 'online'},
+                {text: 'Offline', class: 'offline'},
+                {text: 'Typing...', class: 'typing'},
+                {text: 'Recording Audio', class: 'recording'},
+                {text: 'Online', class: 'online'}
+            ];
+            
+            const status = statuses[Math.floor(Math.random() * statuses.length)];
+            const statusElement = document.querySelector('#whatsapp-status span');
+            
+            statusElement.className = status.class;
+            statusElement.textContent = status.text;
+        }
+        
+        function clearMessages(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+        
+        // Initialize the simulation
+        window.onload = function() {
+            simulateWhatsApp();
+            simulateSMS();
+            simulateGallery();
+            startCameraSimulation();
+            
+            // Start status updates every 3 seconds
+            statusInterval = setInterval(updateWhatsAppStatus, 3000);
+        };
+    </script>
+</body>
+</html>
